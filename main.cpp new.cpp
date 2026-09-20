@@ -22,8 +22,8 @@ pros::Motor intake(1, pros::v5::MotorGears::blue);
 
 pros::MotorGroup lift({13, -15}, pros::v5::MotorGears::green);
 
-pros::MotorGroup motors_left({-16, -17, -18}, pros::v5::MotorGears::blue);  
-pros::MotorGroup motors_right({8, 9, 10}, pros::v5::MotorGears::blue);
+pros::MotorGroup motors_left({-2, -3, -4}, pros::v5::MotorGears::blue);  
+pros::MotorGroup motors_right({18, 19, 20}, pros::v5::MotorGears::blue);
 
 
 void on_center_button() {
