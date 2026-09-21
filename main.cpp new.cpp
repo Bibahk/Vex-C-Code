@@ -18,7 +18,7 @@ const double MAX_MOTOR_RPM = 600.0;
 pros::Motor small_left_motor(20); 
 pros::Motor small_right_motor(11); // Note: Port 11 is also used in motors_right below
 
-pros::Motor intake(1, pros::v5::MotorGears::blue); 
+pros::Motor intake(2, pros::v5::MotorGears::blue); 
 
 pros::MotorGroup lift({13, -15}, pros::v5::MotorGears::green);
 
