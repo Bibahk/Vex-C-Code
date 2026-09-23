@@ -4,6 +4,7 @@
 #include <cmath>     
 #include <stdlib.h>
 #include <stdbool.h>
+#include "pros/llemu.hpp"
 
 void run_my_subsystems();
 
