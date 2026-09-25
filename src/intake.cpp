@@ -3,6 +3,8 @@
 
 bool SlowLift = false;
 int liftSpeed = 12000;
+const double maxLiftHeight = 5400;    // max height of lift
+const double minLiftHeight = 100.0;   // minimum height of lift (to prevent wrapping back up)
 
 void zero_lift() {
     lift.move_voltage(-6000); // Increased power to fight friction
@@ -13,9 +15,6 @@ void zero_lift() {
 
 void run_my_subsystems() {
     pros::Controller master_controller(pros::E_CONTROLLER_MASTER);
-    
-    // Set brake mode once
-    lift.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
 
     // intake
     if (master_controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
@@ -37,8 +36,6 @@ void run_my_subsystems() {
         }
     }
 
-    double maxLiftHeight = 5400;    // max height of lift
-    double minLiftHeight = 100.0;   // minimum height of lift (to prevent wrapping back up)
     double currentHeight = lift.get_position();
 
     // Print to the controller screen (Row 2, Column 0)

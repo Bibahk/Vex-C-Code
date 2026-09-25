@@ -21,7 +21,7 @@ pros::Motor small_right_motor(11); // Note: Port 11 is also used in motors_right
 
 pros::Motor intake(2, pros::v5::MotorGears::blue); 
 
-pros::MotorGroup lift({13, -15}, pros::v5::MotorGears::green);
+pros::MotorGroup lift({13, -15}, pros::v5::MotorGears::blue);
 
 pros::MotorGroup motors_left({-3, -4, -5}, pros::v5::MotorGears::blue);  
 pros::MotorGroup motors_right({18, 19, 20}, pros::v5::MotorGears::blue);
@@ -46,6 +46,7 @@ void initialize() {
     // Force the motors to brake so turning is sharp
     motors_left.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
     motors_right.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
+    lift.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
 }
 
 
@@ -185,17 +186,13 @@ void opcontrol() {
         int leftPower  = drive + turn;
         int rightPower = drive - turn;
         
-        const double MAX_WATTS = 3; 
-
-
+        const double MAX_WATTS = 3;
 
         // change 40 to like 30 to make it slower ect
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
             leftPower  = leftPower * 40 / 100;
             rightPower = rightPower * 40 / 100;  
-        }  
-     
-    
+        }
 
         leftPower  = std::clamp(leftPower, -100, 100);
         rightPower = std::clamp(rightPower, -100, 100);
@@ -207,7 +204,7 @@ void opcontrol() {
             motors_left.move_voltage(leftPower * 120);
             motors_right.move_voltage(rightPower * 120);
         }
-run_my_subsystems();
+        run_my_subsystems();
 
         pros::delay(20);    
     }
