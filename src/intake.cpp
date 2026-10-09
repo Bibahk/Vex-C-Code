@@ -6,6 +6,7 @@ int liftSpeed = 12000;
 const double maxLiftHeight = 5400;    // max height of lift
 const double minLiftHeight = 100.0;   // minimum height of lift (to prevent wrapping back up)
 
+
 void zero_lift() {
     lift.move_voltage(-6000); // Increased power to fight friction
     pros::delay(800);         // Given more time to reach the bottom     
@@ -60,5 +61,22 @@ void run_my_subsystems() {
     } 
     else {
         lift.move_voltage(0); // Holding position
+    }
+
+    // pneumatics
+    if (master_controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
+        if (clamp.is_extended()) {
+            clamp.retract();
+        } else {
+            clamp.extend();
+        }
+    }
+
+    if (master_controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
+        if (rotate.is_extended()) {
+            rotate.retract();
+        } else {
+            rotate.extend();
+        }
     }
 }

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "pros/llemu.hpp"
+#include "pros/adi.hpp"
 
 void run_my_subsystems();
 
@@ -26,6 +27,9 @@ pros::MotorGroup lift({13, -15}, pros::v5::MotorGears::blue);
 pros::MotorGroup motors_left({-3, -4, -5}, pros::v5::MotorGears::blue);  
 pros::MotorGroup motors_right({18, 19, 20}, pros::v5::MotorGears::blue);
 
+// piston defs
+pros::adi::Pneumatics clamp('A', false);
+pros::adi::Pneumatics rotate('B', false);
 
 void on_center_button() {
     static bool pressed = false;
@@ -46,7 +50,7 @@ void initialize() {
     // Force the motors to brake so turning is sharp
     motors_left.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
     motors_right.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
-    lift.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
+    lift.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD); // Hold position when not moving
 }
 
 

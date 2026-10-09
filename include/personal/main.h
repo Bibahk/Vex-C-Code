@@ -20,6 +20,7 @@ void opcontrol(void);
 
 #include "pros/motors.hpp"
 #include "pros/motor_group.hpp"
+#include "pros/adi.hpp"
 
 extern pros::Motor small_left_motor;
 extern pros::Motor small_right_motor;
@@ -27,6 +28,8 @@ extern pros::Motor intake;
 extern pros::MotorGroup lift;
 extern pros::MotorGroup motors_left;
 extern pros::MotorGroup motors_right;
+extern pros::adi::Pneumatics clamp;
+extern pros::adi::Pneumatics rotate;
 
 void on_center_button();
 void display_task_fn(void* param);
