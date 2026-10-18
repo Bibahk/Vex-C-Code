@@ -4,7 +4,7 @@
 #include <cmath>     
 #include <stdlib.h>
 #include <stdbool.h>
-#include "pros/llemu.hpp"
+#include "pros/llemu.hpp"   
 #include "lemlib/api.hpp" // IWYU pragma: keep
 
 void run_my_subsystems();
@@ -17,12 +17,13 @@ const double MAX_MOTOR_RPM = 600.0;
 
 
 
-
-
+pros::Rotation rotation_sensor(6); //wtv port it is change
+pros::adi::DigitalOut claw('A'); //wtv port it is change
 pros::Motor small_left_motor(20); 
 pros::Motor small_right_motor(11); 
 
 pros::Motor intake(2, pros::v5::MotorGears::blue); 
+
 
 pros::MotorGroup lift({13, -15}, pros::v5::MotorGears::blue);
 
@@ -83,7 +84,24 @@ void initialize() {
 
 void disabled() {}
 void competition_initialize() {}
-void autonomous() {}
+void autonomous() {chassis.setPose(-69.34, -4.39, 0);
+// simple 3 pin auton
+    claw.set_value(false); 
+    pros::delay(100);
+
+    chassis.moveToPoint(-47.51, -24.02, 2000, {.maxSpeed = 100});
+
+    chassis.moveToPoint(-23.67, -23.29, 2000, {.maxSpeed = 100});
+    claw.set_value(true); 
+    pros::delay(250); 
+
+    chassis.moveToPoint(-47.51, -24.02, 2000, {.forwards = false, .maxSpeed = 100});
+
+    chassis.moveToPoint(-47.14, -47.13, 2000, {.maxSpeed = 100});
+    claw.set_value(false); 
+    pros::delay(250);
+
+    chassis.moveToPoint(-47.51, -24.02, 2000, {.forwards = false, .maxSpeed = 100});}
 
 // The background task that handles the controller screen and rumble
 void display_task_fn(void* param) {
