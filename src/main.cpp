@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "pros/llemu.hpp"
+#include "lemlib/api.hpp" // IWYU pragma: keep
 
 void run_my_subsystems();
 
@@ -14,17 +15,47 @@ const double MAX_MOTOR_RPM = 600.0;
 
 //motor drfinitions
 
-//motor definitions
+
+
+
 
 pros::Motor small_left_motor(20); 
-pros::Motor small_right_motor(11); // Note: Port 11 is also used in motors_right below
+pros::Motor small_right_motor(11); 
 
 pros::Motor intake(2, pros::v5::MotorGears::blue); 
 
 pros::MotorGroup lift({13, -15}, pros::v5::MotorGears::blue);
 
 pros::MotorGroup motors_left({-3, -4, -5}, pros::v5::MotorGears::blue);  
-pros::MotorGroup motors_right({18, 19, 20}, pros::v5::MotorGears::blue);
+pros::MotorGroup motors_right({18, 19, 20}, pros::v5::MotorGears::blue); 
+
+
+pros::Imu imu(1);
+
+
+lemlib::Drivetrain drivetrain(&motors_left, 
+                              &motors_right, 
+                              11.5,          
+                              lemlib::Omniwheel::NEW_325, 
+                              360,           
+                              2              
+);
+
+lemlib::OdomSensors sensors(nullptr, 
+                            nullptr, 
+                            nullptr, 
+                            nullptr, 
+                            &imu     
+);
+
+lemlib::ControllerSettings lateral_controller(10, 0, 30, 3, 1, 100, 3, 500, 20);
+lemlib::ControllerSettings angular_controller(10, 0, 30, 3, 1, 100, 3, 500, 20);
+
+lemlib::Chassis chassis(drivetrain, 
+                        lateral_controller, 
+                        angular_controller, 
+                        sensors
+);
 
 
 void on_center_button() {
