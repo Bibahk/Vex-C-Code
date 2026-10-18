@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include "pros/llemu.hpp"
 #include "pros/adi.hpp"
+#include "pros/distance.hpp"
 
 void run_my_subsystems();
 
@@ -30,6 +31,8 @@ pros::MotorGroup motors_right({18, 19, 20}, pros::v5::MotorGears::blue);
 // piston defs
 pros::adi::Pneumatics clamp('A', false);
 pros::adi::Pneumatics rotate('B', false);
+
+// Object Sensor
 
 void on_center_button() {
     static bool pressed = false;
