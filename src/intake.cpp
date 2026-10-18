@@ -9,6 +9,7 @@ int liftSpeed = 12000;
 const double maxLiftHeight = 5400;    // max height of lift
 const double minLiftHeight = 100.0;   // minimum height of lift (to prevent wrapping back up)
 
+
 void zero_lift() {
     lift.move_voltage(-6000); // Increased power to fight friction
     pros::delay(800);         // Given more time to reach the bottom     

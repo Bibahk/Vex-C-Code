@@ -78,7 +78,7 @@ void initialize() {
     // Force the motors to brake so turning is sharp
     motors_left.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
     motors_right.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
-    lift.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
+    lift.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD); // Hold position when not moving
 }
 
 
