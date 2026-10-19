@@ -10,7 +10,7 @@ int liftSpeed = 12000;
 const double maxLiftHeight = 5400.0;    // max height of lift
 const double minLiftHeight = 100.0;   // minimum height of lift
 
-// ==================== LIFT CONTROLLER CLASS ====================
+// lift controller class
 class LiftController {
 private:
     pros::Motor& motor;
@@ -112,7 +112,7 @@ void run_my_subsystems() {
         lift.move_voltage(0); 
     }
 
-    // ----------------- PNEUMATICS (A & B) -----------------
+    // Pneumatics logic 
     if (master_controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
         if (clamp.is_extended()) {
             clamp.retract();
