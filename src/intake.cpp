@@ -2,28 +2,32 @@
 #include "pros/misc.h"
 #include "lemlib/api.hpp"
 #include "pros/rotation.hpp"
+#include <cmath>
+#include <algorithm>
 
 // Declare your rotation sensor externally so it's accessible here
 extern pros::Rotation lift_rotation;
+extern pros::MotorGroup lift;
+extern pros::Motor intake;
+extern pros::adi::Pneumatics clamp;
+extern pros::adi::Pneumatics rotate;
 
 int liftSpeed = 12000;
-const double maxLiftHeight = 5400.0;    // max height of lift
-const double minLiftHeight = 100.0;   // minimum height of lift
 
 // lift controller class
 class LiftController {
 private:
-    pros::Motor& motor;
+    pros::MotorGroup& motorGroup;
     lemlib::PID pid; 
 
 public:
-    LiftController(pros::Motor& liftMotor, float kP, float kI, float kD) 
-        : motor(liftMotor), pid(1.0, 0.0, 0.0, 15.0, true) {}
+    LiftController(pros::MotorGroup& liftGroup, float kP, float kI, float kD) 
+        : motorGroup(liftGroup), pid(kP, kI, kD, 15.0, true) {}
 
     enum class HeightPreset {
         DOWN = 0,
         LOW_GOAL = 250,   
-        HIGH_GOAL = 600   
+        HIGH_GOAL = 200   
     };
 
     void moveTo(float target, float timeoutMs = 2000) {
@@ -31,17 +35,17 @@ public:
         uint32_t startTime = pros::millis();
         
         while (pros::millis() - startTime < timeoutMs) {
-            float currentPos = motor.get_position();
+            float currentPos = lift_rotation.get_position() / 100.0;
             float error = target - currentPos;
 
             if (std::abs(error) < 3.0) break;
 
             float output = pid.update(error);
-            motor.move(std::clamp(output, -127.0f, 127.0f));
+            motorGroup.move(std::clamp(output, -127.0f, 127.0f));
 
             pros::delay(10);
         }
-        motor.brake();
+        motorGroup.brake();
     }
 
     void moveToPreset(HeightPreset preset) {
@@ -49,10 +53,13 @@ public:
     }
 };
 
+// Instantiate the lift controller
+LiftController liftController(lift, 1.0, 0.0, 0.0);
+
 // helper functoins
 void zero_lift() {
     lift.move_voltage(-6000); 
-    pros::delay(800);         
+    pros::delay(800);        
     lift.move_voltage(0);
     lift.set_zero_position(0); 
 }
@@ -92,25 +99,23 @@ void run_my_subsystems() {
         print_timer = pros::millis();
     }
 
-    if (master_controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
-        // Go up
-        if (currentHeight < maxLiftHeight) {
-            lift.move_voltage(liftSpeed);
-        } else {
-            lift.move_voltage(0); 
-        }
+    // D-Pad buttons for PID presets
+    if (master_controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
+        liftController.moveToPreset(LiftController::HeightPreset::HIGH_GOAL);
+    }
+    else if (master_controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+        liftController.moveToPreset(LiftController::HeightPreset::DOWN);
+    }
+    // Direct manual control on R1 and R2 (height limits removed)
+    else if (master_controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
+        lift.move_voltage(liftSpeed); // Go up
     } 
     else if (master_controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-        // Go down
-        if (currentHeight > minLiftHeight) {
-            lift.move_voltage(-liftSpeed);
-        } else {
-            lift.move_voltage(0); 
-        }
+        lift.move_voltage(-liftSpeed); // Go down
     } 
     else {
         lift.move_voltage(0); 
-    }
+    }   
 
     // Pneumatics logic 
     if (master_controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {

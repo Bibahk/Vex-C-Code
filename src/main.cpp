@@ -1,29 +1,27 @@
 #include "personal/main.h"
 #include "pros/motors.hpp"
+#include "pros/motor_group.hpp"
 #include <algorithm> 
-#include <cmath>     
+#include <cmath>    
 #include <stdlib.h>
 #include <stdbool.h>
 #include "pros/llemu.hpp"
 #include "pros/adi.hpp"
 #include "pros/distance.hpp"
+#include "pros/rotation.hpp"
 
 void run_my_subsystems();
-
 
 const double WHEEL_SIZE_INCHES = 2.75;
 const double MAX_MOTOR_RPM = 600.0;
 
-//motor drfinitions
-
 //motor definitions
-
 pros::Motor small_left_motor(20); 
 pros::Motor small_right_motor(11); // Note: Port 11 is also used in motors_right below
 
 pros::Motor intake(2, pros::v5::MotorGears::blue); 
 
-pros::MotorGroup lift({13, -15}, pros::v5::MotorGears::blue);
+pros::MotorGroup lift({15, -13}, pros::v5::MotorGears::blue);
 
 pros::MotorGroup motors_left({-3, -4, -5}, pros::v5::MotorGears::blue);  
 pros::MotorGroup motors_right({18, 19, 20}, pros::v5::MotorGears::blue);
@@ -31,6 +29,7 @@ pros::MotorGroup motors_right({18, 19, 20}, pros::v5::MotorGears::blue);
 // piston defs
 pros::adi::Pneumatics clamp('A', false);
 pros::adi::Pneumatics rotate('B', false);
+pros::Rotation lift_rotation(7); 
 
 // Object Sensor
 
@@ -76,7 +75,7 @@ void display_task_fn(void* param) {
         if (master.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
             if (!btnPressed) {
                 showTemps = !showTemps; 
-                master.clear();         
+                master.clear();        
                 btnPressed = true;
                 cycle_timer = 0;        
             }
@@ -89,7 +88,7 @@ void display_task_fn(void* param) {
             if (cycle_timer == 5) {
                 int total_seconds = (pros::millis() - startTime) / 1000;
                 if (total_seconds < 60) {
-                    master.print(0, 0, "Time: %d s       ", total_seconds);
+                    master.print(0, 0, "Time: %d s      ", total_seconds);
                 } else {
                     int minutes = total_seconds / 60;
                     int seconds = total_seconds % 60;
@@ -110,11 +109,11 @@ void display_task_fn(void* param) {
                 } else if (cycle_timer == 10) { 
                     double lMax = std::max({motors_left.get_temperature(0), motors_left.get_temperature(1), motors_left.get_temperature(2)});
                     const char* lStatus = (lMax < 45) ? "Good" : (lMax < 55 ? "Med " : "Bad ");
-                    master.print(1, 0, "L:%.0f%% %s       ", (lMax / 70.0 * 100.0), lStatus);
+                    master.print(1, 0, "L:%.0f%% %s      ", (lMax / 70.0 * 100.0), lStatus);
                 } else if (cycle_timer == 15) { 
                     double rMax = std::max({motors_right.get_temperature(0), motors_right.get_temperature(1), motors_right.get_temperature(2)});
                     const char* rStatus = (rMax < 45) ? "Good" : (rMax < 55 ? "Med " : "Bad ");
-                    master.print(2, 0, "R:%.0f%% %s       ", (rMax / 70.0 * 100.0), rStatus);
+                    master.print(2, 0, "R:%.0f%% %s      ", (rMax / 70.0 * 100.0), rStatus);
                 }
             } else {
                 if (cycle_timer == 5) {
@@ -122,11 +121,11 @@ void display_task_fn(void* param) {
                 } else if (cycle_timer == 10) {
                     double tL = small_left_motor.get_temperature();
                     const char* lStatus = (tL < 45) ? "Good" : (tL < 55 ? "Med " : "Bad ");
-                    master.print(1, 0, "L:%.0f%% %s       ", (tL / 70.0 * 100.0), lStatus);
+                    master.print(1, 0, "L:%.0f%% %s      ", (tL / 70.0 * 100.0), lStatus);
                 } else if (cycle_timer == 15) {
                     double tR = small_right_motor.get_temperature();
                     const char* rStatus = (tR < 45) ? "Good" : (tR < 55 ? "Med " : "Bad ");
-                    master.print(2, 0, "R:%.0f%% %s       ", (tR / 70.0 * 100.0), rStatus);
+                    master.print(2, 0, "R:%.0f%% %s      ", (tR / 70.0 * 100.0), rStatus);
                 }
             }
 
@@ -137,7 +136,7 @@ void display_task_fn(void* param) {
             }
         }
 
-       
+        
         // Get the highest temp in Celsius
         double absoluteMaxTemp = std::max({
             motors_left.get_temperature(0), motors_left.get_temperature(1), motors_left.get_temperature(2),
@@ -151,14 +150,14 @@ void display_task_fn(void* param) {
        // static int rumble_timer = 0;
         // Rumble now triggers when the hottest motor hits 85%
        // if (maxTempPercent >= 85) { 
-     //       rumble_timer++;
-      //      if (rumble_timer >= 150) {
-      //          master.rumble("- . -"); 
-       //         rumble_timer = 0;
-       //     }
+     //     rumble_timer++;
+     //     if (rumble_timer >= 150) {
+     //         master.rumble("- . -"); 
+        //      rumble_timer = 0;
+        //  }
        // } else {
-      //      rumble_timer = 0; 
-       // }
+     //     rumble_timer = 0; 
+        // }
 
         pros::delay(20);
     }
