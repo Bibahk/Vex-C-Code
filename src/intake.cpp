@@ -2,25 +2,66 @@
 #include "pros/misc.h"
 #include "lemlib/api.hpp"
 #include "pros/rotation.hpp"
+
+// Declare your rotation sensor externally so it's accessible here
 extern pros::Rotation lift_rotation;
 
-bool SlowLift = false;
 int liftSpeed = 12000;
-const double maxLiftHeight = 5400;    // max height of lift
-const double minLiftHeight = 100.0;   // minimum height of lift (to prevent wrapping back up)
+const double maxLiftHeight = 5400.0;    // max height of lift
+const double minLiftHeight = 100.0;   // minimum height of lift
 
+// ==================== LIFT CONTROLLER CLASS ====================
+class LiftController {
+private:
+    pros::Motor& motor;
+    lemlib::PID pid; 
 
+public:
+    LiftController(pros::Motor& liftMotor, float kP, float kI, float kD) 
+        : motor(liftMotor), pid(1.0, 0.0, 0.0, 15.0, true) {}
+
+    enum class HeightPreset {
+        DOWN = 0,
+        LOW_GOAL = 250,   
+        HIGH_GOAL = 600   
+    };
+
+    void moveTo(float target, float timeoutMs = 2000) {
+        pid.reset(); 
+        uint32_t startTime = pros::millis();
+        
+        while (pros::millis() - startTime < timeoutMs) {
+            float currentPos = motor.get_position();
+            float error = target - currentPos;
+
+            if (std::abs(error) < 3.0) break;
+
+            float output = pid.update(error);
+            motor.move(std::clamp(output, -127.0f, 127.0f));
+
+            pros::delay(10);
+        }
+        motor.brake();
+    }
+
+    void moveToPreset(HeightPreset preset) {
+        moveTo(static_cast<float>(preset));
+    }
+};
+
+// helper functoins
 void zero_lift() {
-    lift.move_voltage(-6000); // Increased power to fight friction
-    pros::delay(800);         // Given more time to reach the bottom     
+    lift.move_voltage(-6000); 
+    pros::delay(800);         
     lift.move_voltage(0);
     lift.set_zero_position(0); 
 }
 
+// driver control 
 void run_my_subsystems() {
-    pros::Controller master_controller(pros::E_CONTROLLER_MASTER);
+    static pros::Controller master_controller(pros::E_CONTROLLER_MASTER);
 
-    // intake
+    //intake control
     if (master_controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
         intake.move_voltage(-12000); 
     } 
@@ -31,7 +72,7 @@ void run_my_subsystems() {
         intake.move_voltage(0); 
     }
 
-    // press and hold x to make it slower
+    
     if (master_controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
         if (liftSpeed == 12000) {
             liftSpeed = 6000;
@@ -39,75 +80,52 @@ void run_my_subsystems() {
             liftSpeed = 12000;
         }
     }
-class LiftController {
-private:
-    pros::Motor& motor;
-    lemlib::PID pid; 
 
-public:
-    // Constructor initializes the motor reference and LemLib PID gains
-    LiftController(pros::Motor& liftMotor, float kP, float kI, float kD) 
-        : motor(liftMotor), pid(1.0, 0.0, 0.0, 15.0, true) {}
+   
+    // Read from the rotation sensor (divided by 100.0 to convert centidegrees to degrees)
+    double currentHeight = lift_rotation.get_position() / 100.0;
 
-    // Preset height values (e.g., encoder degrees or ticks)
-    enum class HeightPreset {
-        DOWN = 0,
-        LOW_GOAL = 250, // place holders 
-        HIGH_GOAL = 600// place holders
-    };
+    // Throttled screen print to prevent controller lag
+    static uint32_t print_timer = 0;
+    if (pros::millis() - print_timer > 250) {
+        master_controller.print(2, 0, "Lift: %.1f    ", currentHeight);
+        print_timer = pros::millis();
+    }
 
-    void moveTo(float target, float timeoutMs = 2000) {
-        pid.reset(); // Clear previous integral/derivative state
-        uint32_t startTime = pros::millis();
-while (pros::millis() - startTime < timeoutMs) {
-            float currentPos = motor.get_position();
-            float error = target - currentPos;
-
-            // Target reach tolerance check
-            if (std::abs(error) < 3.0) break;
-
-            float output = pid.update(error);
-            motor.move(std::clamp(output, -127.0f, 127.0f));
-
-            pros::delay(10);
+    if (master_controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
+        // Go up
+        if (currentHeight < maxLiftHeight) {
+            lift.move_voltage(liftSpeed);
+        } else {
+            lift.move_voltage(0); 
         }
-
-        // Apply slight hold voltage or brake mode to counteract gravity
-        motor.brake();
+    } 
+    else if (master_controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+        // Go down
+        if (currentHeight > minLiftHeight) {
+            lift.move_voltage(-liftSpeed);
+        } else {
+            lift.move_voltage(0); 
+        }
+    } 
+    else {
+        lift.move_voltage(0); 
     }
 
-    void moveToPreset(HeightPreset preset) {
-        moveTo(static_cast<float>(preset));
+    // ----------------- PNEUMATICS (A & B) -----------------
+    if (master_controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
+        if (clamp.is_extended()) {
+            clamp.retract();
+        } else {
+            clamp.extend();
+        }
     }
-};
-  // use these commands below to move the lift to a preset height in the auton      
-//lift.moveToPreset(HeightPreset::HIGH_GOAL);
-//lift.moveToPreset(HeightPreset::DOWN);
 
-
-    //double currentHeight = lift.get_position();
-
-    // Print to the controller screen (Row 2, Column 0)
-    // Extra spaces at the end clear out any leftover characters from previous text
-   // master_controller.print(2, 0, "Lift: %.1f    ", currentHeight);
-
-   // if (master_controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
-        // go up
-  //      if (currentHeight < maxLiftHeight) {
-  //          lift.move_voltage(liftSpeed);
-  //      } else {
-   //         lift.move_voltage(0); // Stop at the top
-    //    }
- //   } 
-   // else if (master_controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-        // go down
-   //     if (currentHeight > minLiftHeight) {
-   //         lift.move_voltage(-liftSpeed);
-   //     } else {
-   //         lift.move_voltage(0); // stops at bottom
-   //     }
-   // } 
-  //  else {
-  //      lift.move_voltage(0); // Holding position
-  // }
+    if (master_controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
+        if (rotate.is_extended()) {
+            rotate.retract();
+        } else {
+            rotate.extend();
+        }
+    }
 }
