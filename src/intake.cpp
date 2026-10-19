@@ -47,7 +47,7 @@ private:
 public:
     // Constructor initializes the motor reference and LemLib PID gains
     LiftController(pros::Motor& liftMotor, float kP, float kI, float kD) 
-        : motor(liftMotor), pid(kP, kI, kD, 15.0, true) {}
+        : motor(liftMotor), pid(1.0, 0.0, 0.0, 15.0, true) {}
 
     // Preset height values (e.g., encoder degrees or ticks)
     enum class HeightPreset {
@@ -109,5 +109,5 @@ while (pros::millis() - startTime < timeoutMs) {
    // } 
   //  else {
   //      lift.move_voltage(0); // Holding position
-   // }
+  // }
 }
