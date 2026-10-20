@@ -28,8 +28,8 @@ public:
 
     enum class HeightPreset { 
         DOWN = 0, 
-        LOW_GOAL = 200, 
-        HIGH_GOAL = 250 
+        LOW_GOAL = 200, // change to wtv height it is
+        HIGH_GOAL = 250 // change to wtv height it is
     };
 
     void moveTo(float target, float timeoutMs = 2000) {
