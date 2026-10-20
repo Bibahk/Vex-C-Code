@@ -3,20 +3,22 @@
 #include "pros/misc.h"
 #include "lemlib/api.hpp"
 #include "pros/rotation.hpp"
+#include "pros/adi.hpp"
 #include <cmath>
 #include <algorithm>
 
-// Declare your rotation sensor externally so it's accessible here
+// Hardware declarations
 extern pros::Rotation lift_rotation;
 extern pros::MotorGroup lift;
 extern pros::Motor intake;
 extern pros::adi::Pneumatics clamp;
 extern pros::adi::Pneumatics rotate;
+extern pros::adi::DigitalIn limit_switch;
 
 int liftSpeed = 12000;
 double currentHeight = 0;
 
-// lift controller class
+// Lift controller class using PID
 class LiftController {
 private:
     pros::MotorGroup& motorGroup;
@@ -58,7 +60,7 @@ public:
 // Instantiate the lift controller
 LiftController liftController(lift, 1.0, 0.0, 0.0);
 
-// helper functions
+// Helper function to zero the lift on startup
 void zero_lift() {
     lift.move_voltage(-6000); 
     pros::delay(800);        
@@ -66,11 +68,11 @@ void zero_lift() {
     lift.set_zero_position(0); 
 }
 
-// driver control 
+// Driver control loop
 void run_my_subsystems() {
     static pros::Controller master_controller(pros::E_CONTROLLER_MASTER);
 
-    // intake control
+    // Intake control (L1 / L2)
     if (master_controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
         intake.move_voltage(-12000); 
     } 
@@ -81,6 +83,7 @@ void run_my_subsystems() {
         intake.move_voltage(0); 
     }
     
+    // Speed toggle (X button)
     if (master_controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
         if (liftSpeed == 12000) {
             liftSpeed = 6000;
@@ -89,38 +92,50 @@ void run_my_subsystems() {
         }
     }
 
-    // Read from the rotation sensor (divided by 100.0 to convert centidegrees to degrees)
+    // Read lift height from rotation sensor (convert centidegrees to degrees)
     currentHeight = lift_rotation.get_position() / 100.0;
-    // find raw position
-    // Print to the V5 Brain screen
+
+    // Print height to V5 Brain screen
     pros::lcd::print(1, "Lift Pos: %.1f deg", currentHeight);
 
-    // Throttled controller screen print to prevent lag (prints with "deg")
+    // Throttled controller screen print to prevent lag
     static uint32_t print_timer = 0;
     if (pros::millis() - print_timer > 250) {
         master_controller.print(2, 0, "Lift: %.1f deg   ", currentHeight);
         print_timer = pros::millis();
     }
 
-    // D-Pad buttons for PID 
+    // Independent Limit Switch Check 
+    if (limit_switch.get_value() == 0) {
+        lift_rotation.set_position(0);
+        currentHeight = 0.0;
+    }
+
+    // MAKE SURE TO DELETE AFTER TUNING PID, OR ELSE ROBOT WONT MOVE
     if (master_controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
         liftController.moveToPreset(LiftController::HeightPreset::HIGH_GOAL);
-    }
+    } 
     else if (master_controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) {
         liftController.moveToPreset(LiftController::HeightPreset::DOWN);
     }
-    // Direct manual control on R1 and R2 
+    // Direct manual control on R1 up
     else if (master_controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
-        lift.move_voltage(liftSpeed); // Go up
-    } 
+        lift.move_voltage(liftSpeed);
+    }
+    // Manual control on R2 
     else if (master_controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-        lift.move_voltage(-liftSpeed); // Go down
+        // Only allow downward movement if the limit switch is NOT pressed
+        if (limit_switch.get_value() != 0) {
+            lift.move_voltage(-liftSpeed);
+        } else {
+            lift.move_voltage(0); // Safety stop
+        }
     } 
     else {
-        lift.move_voltage(0); 
+        lift.move_voltage(0);
     }   
 
-    // Pneumatics logic 
+    // Pneumatics Logic 
     if (master_controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
         if (clamp.is_extended()) {
             clamp.retract();

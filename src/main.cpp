@@ -9,9 +9,9 @@
 #include "pros/adi.hpp"
 #include "pros/distance.hpp"
 #include "pros/rotation.hpp"
-
+#include "pros/adi.hpp"
 void run_my_subsystems();
-
+pros::adi::Button limit_switch('a'); // change to wtv port it is 
 const double WHEEL_SIZE_INCHES = 2.75;
 const double MAX_MOTOR_RPM = 600.0;
 
@@ -25,6 +25,8 @@ pros::MotorGroup lift({15, -13}, pros::v5::MotorGears::blue);
 
 pros::MotorGroup motors_left({-3, -4, -5}, pros::v5::MotorGears::blue);  
 pros::MotorGroup motors_right({18, 19, 20}, pros::v5::MotorGears::blue);
+// Limit switch plugged into ADI port 'a' (change letter if needed)
+
 
 // piston defs
 pros::adi::Pneumatics clamp('A', false);
@@ -53,6 +55,7 @@ void initialize() {
     motors_left.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
     motors_right.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
     lift.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD); // Hold position when not moving
+    lift_rotation.reset_position(); // Reset the rotation sensor position to 0
 }
 
 
