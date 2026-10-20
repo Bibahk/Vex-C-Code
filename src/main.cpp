@@ -29,7 +29,7 @@ pros::MotorGroup motors_right({18, 19, 20}, pros::v5::MotorGears::blue);
 // piston defs
 pros::adi::Pneumatics clamp('A', false);
 pros::adi::Pneumatics rotate('B', false);
-pros::Rotation lift_rotation(7); 
+pros::Rotation lift_rotation(6); 
 
 // Object Sensor
 

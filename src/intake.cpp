@@ -1,4 +1,5 @@
 #include "personal/main.h"
+#include "pros/apix.h"
 #include "pros/misc.h"
 #include "lemlib/api.hpp"
 #include "pros/rotation.hpp"
@@ -13,6 +14,7 @@ extern pros::adi::Pneumatics clamp;
 extern pros::adi::Pneumatics rotate;
 
 int liftSpeed = 12000;
+double currentHeight = 0;
 
 // lift controller class
 class LiftController {
@@ -56,7 +58,7 @@ public:
 // Instantiate the lift controller
 LiftController liftController(lift, 1.0, 0.0, 0.0);
 
-// helper functoins
+// helper functions
 void zero_lift() {
     lift.move_voltage(-6000); 
     pros::delay(800);        
@@ -68,7 +70,7 @@ void zero_lift() {
 void run_my_subsystems() {
     static pros::Controller master_controller(pros::E_CONTROLLER_MASTER);
 
-    //intake control
+    // intake control
     if (master_controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
         intake.move_voltage(-12000); 
     } 
@@ -78,7 +80,6 @@ void run_my_subsystems() {
     else {
         intake.move_voltage(0); 
     }
-
     
     if (master_controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) {
         if (liftSpeed == 12000) {
@@ -88,25 +89,27 @@ void run_my_subsystems() {
         }
     }
 
-   
     // Read from the rotation sensor (divided by 100.0 to convert centidegrees to degrees)
-    double currentHeight = lift_rotation.get_position() / 100.0;
+    currentHeight = lift_rotation.get_position() / 100.0;
+    // find raw position
+    // Print to the V5 Brain screen
+    pros::lcd::print(1, "Lift Pos: %.1f deg", currentHeight);
 
-    // Throttled screen print to prevent controller lag
+    // Throttled controller screen print to prevent lag (prints with "deg")
     static uint32_t print_timer = 0;
     if (pros::millis() - print_timer > 250) {
-        master_controller.print(2, 0, "Lift: %.1f    ", currentHeight);
+        master_controller.print(2, 0, "Lift: %.1f deg   ", currentHeight);
         print_timer = pros::millis();
     }
 
-    // D-Pad buttons for PID presets
+    // D-Pad buttons for PID 
     if (master_controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) {
         liftController.moveToPreset(LiftController::HeightPreset::HIGH_GOAL);
     }
     else if (master_controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) {
         liftController.moveToPreset(LiftController::HeightPreset::DOWN);
     }
-    // Direct manual control on R1 and R2 (height limits removed)
+    // Direct manual control on R1 and R2 
     else if (master_controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
         lift.move_voltage(liftSpeed); // Go up
     } 
@@ -132,5 +135,5 @@ void run_my_subsystems() {
         } else {
             rotate.extend();
         }
-    }
+    } 
 }
