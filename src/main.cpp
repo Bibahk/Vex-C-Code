@@ -11,7 +11,7 @@
 #include "pros/rotation.hpp"
 #include "pros/adi.hpp"
 void run_my_subsystems();
-pros::adi::Button limit_switch('a'); // change to wtv port it is 
+pros::adi::Button limit_switch('c'); // change to wtv port it is 
 const double WHEEL_SIZE_INCHES = 2.75;
 const double MAX_MOTOR_RPM = 600.0;
 
