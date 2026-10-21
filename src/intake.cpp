@@ -9,7 +9,7 @@ extern pros::MotorGroup lift;
 extern pros::Motor intake;
 extern pros::adi::Pneumatics clamp;
 extern pros::adi::Pneumatics rotate;
-extern pros::adi::Button limit_switch;
+extern pros::adi::Button bumper_switch; // Updated to bumper switch
 extern pros::Rotation lift_rotation;
 
 int liftSpeed = 12000;
@@ -47,8 +47,8 @@ public:
             // Safety check: Prevent lift from breaking itself at physical maximums (Max commented out for tuning, bottom active)
             // if (currentPos >= MAX_HEIGHT && output > 0) output = 0;
             
-            // Stop downward movement if limit switch is hit or height is 0 or below (Commented out for debugging)
-            // if ((limit_switch.get_value() == 0 || currentPos <= 0.0) && output < 0) output = 0;
+            // Stop downward movement if bumper is hit or height is 0 or below 
+             if ((bumper_switch.get_value() == 0 || currentPos <= 0.0) && output < 0) output = 0;
 
             motorGroup.move(std::clamp(output, -127.0f, 127.0f));
             pros::delay(10);
@@ -107,8 +107,8 @@ void run_my_subsystems() {
         print_timer = pros::millis();
     }
 
-    // Independent Limit Switch Check using PROS built-in get_new_press()
-    if (limit_switch.get_new_press()) {
+    // Independent Bumper Switch Check using get_new_press()
+    if (bumper_switch.get_new_press()) {
         lift_rotation.set_position(0);
         currentHeight = 0.0;
     }
@@ -126,7 +126,7 @@ void run_my_subsystems() {
     }
     // R2 makes it go DOWN (Safety checks commented out for tuning)
     else if (master_controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-        // if (limit_switch.get_value() != 0 && currentHeight > 0.0) {
+        // if (bumper_switch.get_value() != 0 && currentHeight > 0.0) {
             lift.move_voltage(liftSpeed);
         // } else {
         //     lift.move_voltage(0); // Safety stop so it won't go below 0
