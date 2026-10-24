@@ -9,7 +9,7 @@ extern pros::MotorGroup lift;
 extern pros::Motor intake;
 extern pros::adi::Pneumatics clamp;
 extern pros::adi::Pneumatics rotate;
-extern pros::adi::Button bumper_switch; // Updated to bumper switch
+extern pros::adi::Button bumper_switch;
 extern pros::Rotation lift_rotation;
 
 int liftSpeed = 12000;
@@ -37,7 +37,8 @@ public:
         uint32_t startTime = pros::millis();
 
         while (pros::millis() - startTime < timeoutMs) {
-            float currentPos = lift_rotation.get_position() / 100.0;
+            // read pos and make sure it stays positive only
+            float currentPos = std::max(0.0f, static_cast<float>(lift_rotation.get_position() / 100.0));
             float error = target - currentPos;
 
             if (std::abs(error) < 3.0) break;
@@ -47,8 +48,8 @@ public:
             // Safety check: Prevent lift from breaking itself at physical maximums (Max commented out for tuning, bottom active)
             // if (currentPos >= MAX_HEIGHT && output > 0) output = 0;
             
-            // Stop downward movement if bumper is hit or height is 0 or below 
-             if ((bumper_switch.get_value() == 0 || currentPos <= 0.0) && output < 0) output = 0;
+            // Stop downward movement if bumper is hit or height is 0 or below (Commented out for debugging)
+            // if ((bumper_switch.get_value() == 0 || currentPos <= 0.0) && output < 0) output = 0;
 
             motorGroup.move(std::clamp(output, -127.0f, 127.0f));
             pros::delay(10);
@@ -94,8 +95,8 @@ void run_my_subsystems() {
         }
     }
 
-    // Read lift height from rotation sensor (convert centidegrees to degrees)
-    currentHeight = lift_rotation.get_position() / 100.0;
+    // Read lift height from rotation sensor, convert to degrees, and clamp to positive values only
+    currentHeight = std::max(0.0, lift_rotation.get_position() / 100.0);
 
     // Print height to V5 Brain screen
     pros::lcd::print(1, "Lift Pos: %.1f deg", currentHeight);
@@ -107,7 +108,7 @@ void run_my_subsystems() {
         print_timer = pros::millis();
     }
 
-    // Independent Bumper Switch Check using get_new_press()
+    // Bumper switch logic to reset lift position when pressed
     if (bumper_switch.get_new_press()) {
         lift_rotation.set_position(0);
         currentHeight = 0.0;
@@ -120,11 +121,11 @@ void run_my_subsystems() {
         liftController.moveToPreset(LiftController::HeightPreset::DOWN);
     }
 
-    // R1 makes it go UP
+    // R1 makes it go up
     if (master_controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
         lift.move_voltage(-liftSpeed);
     }
-    // R2 makes it go DOWN (Safety checks commented out for tuning)
+    // R2 makes it go down (Safety checks commented out for tuning max height)
     else if (master_controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
         // if (bumper_switch.get_value() != 0 && currentHeight > 0.0) {
             lift.move_voltage(liftSpeed);
