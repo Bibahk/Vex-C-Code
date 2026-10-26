@@ -1,4 +1,5 @@
 #include "personal/main.h"
+#include "lemlib/chassis/trackingWheel.hpp"
 #include "pros/motors.hpp"
 #include "pros/motor_group.hpp"
 #include <algorithm> 
@@ -10,6 +11,7 @@
 #include "pros/distance.hpp"
 #include "pros/rotation.hpp"
 #include "pros/adi.hpp"
+#include "lemlib/api.hpp"
 void run_my_subsystems();
 pros::adi::Button bumper_switch('c'); // Updated to bumper switch
 const double MAX_MOTOR_RPM = 600.0;
@@ -30,9 +32,66 @@ pros::MotorGroup motors_right({18, 19, 20}, pros::v5::MotorGears::blue);
 // piston defs
 pros::adi::Pneumatics clamp('A', false);
 pros::adi::Pneumatics rotate('B', false);
-pros::Rotation lift_rotation(6); 
 
-// Object Sensor
+// Encoders defs
+pros::Rotation lift_rotation(6); 
+pros::Rotation horizontal_encoder(11); // Horizontal rotation sensor on port 11
+pros::Rotation vertical_encoder(12);   // Vertical rotation sensor on port 12
+
+// Imu sensor definition
+pros::Imu imu(7); // IMU on port 7
+
+// drivetrain settings
+lemlib::Drivetrain drivetrain(&motors_left, // left motor group
+                              &motors_right, // right motor group
+                              12.5, // 12.5 inch track width
+                              lemlib::Omniwheel::NEW_275, // using new 2.75" omnis
+                              450, // drivetrain rpm is 450
+                              2 // horizontal drift is 2 (for now)
+);
+
+// lemlib odometry settings
+lemlib::TrackingWheel horizontal_tracking_wheel(&horizontal_encoder, lemlib::Omniwheel::NEW_2, 1.75     );
+lemlib::TrackingWheel vertical_tracking_wheel(&vertical_encoder, lemlib::Omniwheel::NEW_2, 1);
+
+lemlib::OdomSensors sensors(&vertical_tracking_wheel, // vertical tracking wheel 1, set to null
+                            nullptr, // vertical tracking wheel 2, set to nullptr as we are using IMEs
+                            &horizontal_tracking_wheel, // horizontal tracking wheel 1
+                            nullptr, // horizontal tracking wheel 2, set to nullptr as we don't have a second one
+                            &imu // inertial sensor
+);
+
+// lateral PID controller
+lemlib::ControllerSettings lateral_controller(10, // proportional gain (kP)
+                                              0, // integral gain (kI)
+                                              3, // derivative gain (kD)
+                                              3, // anti windup
+                                              1, // small error range, in inches
+                                              100, // small error range timeout, in milliseconds
+                                              3, // large error range, in inches
+                                              500, // large error range timeout, in milliseconds
+                                              20 // maximum acceleration (slew)
+);
+
+// angular PID controller
+lemlib::ControllerSettings angular_controller(2, // proportional gain (kP)
+                                              0, // integral gain (kI)
+                                              10, // derivative gain (kD)
+                                              0, // anti windup
+                                              0, // small error range, in inches
+                                              0, // small error range timeout, in milliseconds
+                                              0, // large error range, in inches
+                                              0, // large error range timeout, in milliseconds
+                                              0 // maximum acceleration (slew)
+);
+
+// create the chassis
+lemlib::Chassis chassis(drivetrain, // drivetrain settings
+                        lateral_controller, // lateral PID settings
+                        angular_controller, // angular PID settings
+                        sensors // odometry sensors
+);
+
 
 void on_center_button() {
     static bool pressed = false;
@@ -49,7 +108,7 @@ void initialize() {
     pros::lcd::initialize();
     pros::lcd::set_text(1, "Hello PROS User!");
     pros::lcd::register_btn1_cb(on_center_button);
-
+    chassis.calibrate();
     // Force the motors to brake so turning is sharp
     motors_left.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
     motors_right.set_brake_mode(pros::E_MOTOR_BRAKE_BRAKE);
@@ -60,7 +119,12 @@ void initialize() {
 
 void disabled() {}
 void competition_initialize() {}
-void autonomous() {}
+void autonomous() {
+        // set position to x:0, y:0, heading:0
+    chassis.setPose(0, 0, 0);
+    // turn to face heading 90 with a very long timeout
+    chassis.turnToHeading(90, 100000);
+}
 
 // The background task that handles the controller screen and rumble
 void display_task_fn(void* param) {
