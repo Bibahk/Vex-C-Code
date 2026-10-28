@@ -12,6 +12,7 @@
 #include "pros/rotation.hpp"
 #include "pros/adi.hpp"
 #include "lemlib/api.hpp"
+ASSET(four_cone_auton_txt);
 void run_my_subsystems();
 pros::adi::Button bumper_switch('c'); // Updated to bumper switch
 const double MAX_MOTOR_RPM = 600.0;
@@ -120,9 +121,11 @@ void initialize() {
 void disabled() {}
 void competition_initialize() {}
 void autonomous() {
-    chassis.setPose(0, 0, 0);
-    
+    chassis.setPose(69.872, 0.007, 0);
+
     chassis.moveToPoint(0, 24, 999000);
+
+    chassis.follow(four_cone_auton_txt, 15, 2000);
 }
 
 // The background task that handles the controller screen and rumble
