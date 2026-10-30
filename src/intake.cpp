@@ -48,8 +48,8 @@ public:
             // Safety check: Prevent lift from breaking itself at physical maximums (Max commented out for tuning, bottom active)
             // if (currentPos >= MAX_HEIGHT && output > 0) output = 0;
             
-            // Stop downward movement if bumper is hit or height is 0 or below (Commented out for debugging)
-            // if ((bumper_switch.get_value() == 0 || currentPos <= 0.0) && output < 0) output = 0;
+            // Stop downward movement if bumper is hit or height is 0 or below 
+             if ((bumper_switch.get_value() == 0 || currentPos <= 0.0) && output < 0) output = 0;
 
             motorGroup.move(std::clamp(output, -127.0f, 127.0f));
             pros::delay(10);
