@@ -45,7 +45,7 @@ public:
 
             float output = pid.update(error);
 
-            // Safety check: Prevent lift from breaking itself at physical maximums (Max commented out for tuning, bottom active)
+            //  Prevent lift from breaking itself at max height (Max commented out for tuning, bottom active)
             // if (currentPos >= MAX_HEIGHT && output > 0) output = 0;
             
             // Stop downward movement if bumper is hit or height is 0 or below 
