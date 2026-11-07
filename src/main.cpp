@@ -112,6 +112,15 @@ pros::Motor toggle_motor(6, pros::v5::MotorGears::green);
 pros::Distance clamp_detector(10);
 pros::adi::Pneumatics clamp('A', false);
 
+enum Auto {
+  FourPin,
+  Left,
+  Skills,
+  None
+};
+
+Auto SelectedAuto = Auto::None;
+
 void initialize() {
   pros::lcd::initialize();
   pros::lcd::set_text(1, "Hello PROS User!");
@@ -151,55 +160,60 @@ void initialize() {
 void disabled() {}
 void competition_initialize() {}
 void autonomous() {
-chassis.setPose(-63.74, -2.86, 270);
-pros::delay(2000);
-chassis.moveToPoint(-49.14, -3.25, 2000, {.forwards = false});
-chassis.turnToPoint(-48.98, -15.72, 2000, {.forwards = false,. minSpeed = 25,.earlyExitRange=5});
-chassis.moveToPoint(-48.98, -15.72, 2000, {.forwards = false});
-chassis.moveToPoint(-48.96, -3.07, 2000);
-chassis.turnToPoint(-29.23, -18.43, 2000, {.forwards = false,.minSpeed = 25,.earlyExitRange=5});
-chassis.moveToPoint(-29.23, -18.43, 2000, {.forwards = false});
-chassis.moveToPoint(-23.49, -23.8, 2000, {.forwards = false});
-chassis.turnToPoint(-37.22, -23.8, 2000, {.forwards = false,.minSpeed = 25,.earlyExitRange=5});
-chassis.moveToPoint(-37.22, -23.8, 2000, {.forwards = false});
-chassis.turnToPoint(-23.67, -23.8, 2000);
-chassis.moveToPoint(-23.67, -23.8, 2000);
-chassis.turnToPoint(-42.18, -42.12, 2000, {.forwards = false,.minSpeed = 25,.earlyExitRange=5});
-chassis.moveToPoint(-42.18, -42.12, 2000, {.forwards = false});
-chassis.moveToPoint(-47, -47.26, 2000);
-chassis.turnToPoint(-47, -30.79, 2000, {.forwards = false,.minSpeed = 25,.earlyExitRange=5});
-chassis.moveToPoint(-47, -30.79, 2000, {.forwards = false});
-chassis.moveToPoint(-47, -59, 2000);
-chassis.turnToPoint(-61, -59, 2000, {.forwards = false});
-chassis.moveToPoint(-61, -59, 2000, {.forwards = false});
-chassis.moveToPoint(-47, -59, 2000);
-chassis.turnToPoint(-47, -30.42, 2000, {.forwards = false});
-chassis.moveToPoint(-47, -30.42, 2000, {.forwards = false});
-chassis.moveToPoint(-47, -59.11, 2000);
-chassis.turnToPoint(-61, -59, 2000, {.forwards = false});
-chassis.moveToPoint(-61, -59, 2000, {.forwards = false});
-chassis.moveToPoint(-37, -58.74, 2000);
-chassis.turnToPoint(-30, -52, 2000, {.forwards = false});
-chassis.moveToPoint(-30, -52, 2000, {.forwards = false});
-chassis.moveToPoint(-37.19, -59.11, 2000);
-chassis.turnToPoint(-61, -59, 2000, {.forwards = false});
-chassis.moveToPoint(-61, -59, 2000, {.forwards = false});
-chassis.moveToPoint(-37, -59, 2000);
-chassis.turnToPoint(-30, -52, 2000, {.forwards = false});
-chassis.moveToPoint(-30, -52, 2000, {.forwards = false});
-chassis.moveToPoint(-37, -59, 5000);
-chassis.turnToPoint(-61, -59, 5000, {.forwards = false});
-chassis.moveToPoint(-61, -59, 5000, {.forwards = false, .maxSpeed = 46});
-chassis.moveToPoint(-37, -59, 5000);
-chassis.turnToPoint(-30, -52, 5000, {.forwards = false});
-chassis.moveToPoint(-30, -52, 5000, {.forwards = false});
-chassis.moveToPoint(-37, -59, 5000);
-chassis.turnToPoint(-0.72, -58.69, 5000);
-chassis.moveToPoint(-0.72, -58.69, 5000);
-chassis.turnToPoint(-0.72, -64.61, 5000);
-chassis.moveToPoint(-0.72, -64.61, 5000);
-chassis.moveToPoint(-0.91, -12.04, 5000, {.forwards = false});
+  if (SelectedAuto == Auto::Skills) {
+    chassis.setPose(-62.62, 0.61, 270);
+    pros::delay(2000);
+    chassis.moveToPoint(-47.11, 0.69, 5000, {.forwards = false});
+    chassis.turnToPoint(-47.17, -14.23, 5000, {.forwards = false});
+    chassis.moveToPoint(-47.17, -14.23, 5000, {.forwards = false});
+    chassis.moveToPoint(-47.17, 0.69, 5000);
+    chassis.turnToPoint(-29.76, -18.61, 5000, {.forwards = false});
+    chassis.moveToPoint(-29.76, -18.61, 5000, {.forwards = false});
+    chassis.moveToPoint(-29.82, -18.68, 5000, {.forwards = false});
+    chassis.turnToPoint(-37.22, -23.8, 5000, {.forwards = false});
+    chassis.moveToPoint(-37.22, -23.8, 5000, {.forwards = false});
+    chassis.turnToPoint(-23.67, -23.8, 5000);
+    chassis.moveToPoint(-23.67, -23.8, 5000);
+    chassis.turnToPoint(-40.24, -40.39, 5000, {.forwards = false});
+    chassis.moveToPoint(-40.24, -40.39, 5000, {.forwards = false});
+    chassis.moveToPoint(-47, -47.26, 5000, {.forwards = false});
+    chassis.turnToPoint(-47, -31.87, 5000, {.forwards = false});
+    chassis.moveToPoint(-47, -31.87, 5000, {.forwards = false});
+    chassis.moveToPoint(-47, -59, 5000, {.maxSpeed = 80});
+    chassis.turnToPoint(-58.4, -59, 5000, {.forwards = false});
+    chassis.moveToPoint(-58.4, -59, 5000, {.forwards = false, .maxSpeed = 80});
+    chassis.moveToPoint(-47, -59, 5000);
+    chassis.turnToPoint(-47, -30.42, 5000, {.forwards = false});
+    chassis.moveToPoint(-47, -30.42, 5000, {.forwards = false});
+    chassis.moveToPoint(-47, -59.11, 5000);
+    chassis.turnToPoint(-58.4, -59, 5000, {.forwards = false});
+    chassis.moveToPoint(-58.4, -59, 5000, {.forwards = false, .maxSpeed = 80});
+    chassis.moveToPoint(-37, -58.74, 5000);
+    chassis.turnToPoint(-30, -52, 5000, {.forwards = false});
+    chassis.moveToPoint(-30, -52, 5000, {.forwards = false});
+    chassis.moveToPoint(-37.19, -59.11, 5000);
+    chassis.turnToPoint(-58.19, -59, 5000, {.forwards = false});
+    chassis.moveToPoint(-58.19, -59, 5000, {.forwards = false, .maxSpeed = 80});
+    chassis.moveToPoint(-37, -59, 5000);
+    chassis.turnToPoint(-30, -52, 5000, {.forwards = false});
+    chassis.moveToPoint(-30, -52, 5000, {.forwards = false});
+    chassis.moveToPoint(-37, -59, 5000);
+    chassis.turnToPoint(-58.4, -58.78, 5000, {.forwards = false});
+    chassis.moveToPoint(-58.4, -58.78, 5000,
+                        {.forwards = false, .maxSpeed = 80});
+    chassis.moveToPoint(-37, -59, 5000);
+    chassis.turnToPoint(-30, -52, 5000, {.forwards = false});
+    chassis.moveToPoint(-30, -52, 5000, {.forwards = false});
+    chassis.moveToPoint(-37, -59, 5000);
+    chassis.turnToPoint(0, -58.69, 5000);
+    chassis.moveToPoint(0, -58.69, 5000);
+    chassis.turnToPoint(0, -62.88, 5000);
+    chassis.moveToPoint(0, -62.88, 5000);
+    chassis.moveToPoint(0, -12.04, 5000, {.forwards = false});
+  } else if (SelectedAuto == Auto::FourPin) {
+    
 
+  }
 
   // chassis.setPose(0, 0, 0);
 
