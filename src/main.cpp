@@ -9,6 +9,7 @@
 #include "pros/motor_group.hpp"
 #include "pros/motors.hpp"
 #include "pros/rotation.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <stdbool.h>
@@ -28,7 +29,6 @@ pros::MotorGroup motors_right({18, 19, 20}, pros::v5::MotorGears::blue);
 // Limit switch plugged into ADI port 'a' (change letter if needed)
 
 // piston defs
-pros::adi::Pneumatics clamp('A', false);
 
 // Encoders defs
 pros::Rotation horizontal_encoder(-11); // Horizontal rotation sensor on port 11
@@ -93,6 +93,25 @@ lemlib::Chassis chassis(drivetrain,         // drivetrain settings
                         sensors             // odometry sensors
 );
 
+// input curve for throttle input during driver control
+lemlib::ExpoDriveCurve
+    throttle_curve(3,    // joystick deadband out of 127
+                   10,   // minimum output where drivetrain will move out of 127
+                   1.019 // expo curve gain
+    );
+
+// input curve for steer input during driver control
+lemlib::ExpoDriveCurve
+    steer_curve(3,    // joystick deadband out of 127
+                10,   // minimum output where drivetrain will move out of 127
+                1.019 // expo curve gain
+    );
+
+pros::MotorGroup lift_motors({15, -13}, pros::v5::MotorGears::blue);
+pros::Motor toggle_motor(6, pros::v5::MotorGears::green);
+pros::Distance clamp_detector(10);
+pros::adi::Pneumatics clamp('A', false);
+
 void initialize() {
   pros::lcd::initialize();
   pros::lcd::set_text(1, "Hello PROS User!");
@@ -132,55 +151,54 @@ void initialize() {
 void disabled() {}
 void competition_initialize() {}
 void autonomous() {
-chassis.setPose(-63.74, -2.86, 270);
-pros::delay(2000);
-chassis.moveToPoint(-49.14, -3.25, 5000, {.forwards = false});
-chassis.turnToPoint(-48.98, -15.72, 5000, {.forwards = false});
-chassis.moveToPoint(-48.98, -15.72, 5000, {.forwards = false});
-chassis.moveToPoint(-48.96, -3.07, 5000);
-chassis.turnToPoint(-29.23, -18.43, 5000, {.forwards = false});
-chassis.moveToPoint(-29.23, -18.43, 5000, {.forwards = false});
-chassis.moveToPoint(-23.49, -23.8, 5000, {.forwards = false});
-chassis.turnToPoint(-37.22, -23.8, 5000, {.forwards = false});
-chassis.moveToPoint(-37.22, -23.8, 5000, {.forwards = false});
-chassis.turnToPoint(-23.67, -23.8, 5000);
-chassis.moveToPoint(-23.67, -23.8, 5000);
-chassis.turnToPoint(-42.18, -42.12, 5000, {.forwards = false});
-chassis.moveToPoint(-42.18, -42.12, 5000, {.forwards = false});
-chassis.moveToPoint(-47, -47.26, 5000);
-chassis.turnToPoint(-47, -30.79, 5000, {.forwards = false});
-chassis.moveToPoint(-47, -30.79, 5000, {.forwards = false});
-chassis.moveToPoint(-47, -59, 5000);
-chassis.turnToPoint(-61, -59, 5000, {.forwards = false});
-chassis.moveToPoint(-61, -59, 5000, {.forwards = false});
-chassis.moveToPoint(-47, -59, 5000);
-chassis.turnToPoint(-47, -30.42, 5000, {.forwards = false});
-chassis.moveToPoint(-47, -30.42, 5000, {.forwards = false});
-chassis.moveToPoint(-47, -59.11, 5000);
-chassis.turnToPoint(-61, -59, 5000, {.forwards = false});
-chassis.moveToPoint(-61, -59, 5000, {.forwards = false});
-chassis.moveToPoint(-37, -58.74, 5000);
-chassis.turnToPoint(-30, -52, 5000, {.forwards = false});
-chassis.moveToPoint(-30, -52, 5000, {.forwards = false});
-chassis.moveToPoint(-37.19, -59.11, 5000);
-chassis.turnToPoint(-61, -59, 5000, {.forwards = false});
-chassis.moveToPoint(-61, -59, 5000, {.forwards = false});
-chassis.moveToPoint(-37, -59, 5000);
-chassis.turnToPoint(-30, -52, 5000, {.forwards = false});
-chassis.moveToPoint(-30, -52, 5000, {.forwards = false});
-chassis.moveToPoint(-37, -59, 5000);
-chassis.turnToPoint(-61, -59, 5000, {.forwards = false});
-chassis.moveToPoint(-61, -59, 5000, {.forwards = false, .maxSpeed = 46});
-chassis.moveToPoint(-37, -59, 5000);
-chassis.turnToPoint(-30, -52, 5000, {.forwards = false});
-chassis.moveToPoint(-30, -52, 5000, {.forwards = false});
-chassis.moveToPoint(-37, -59, 5000);
-chassis.turnToPoint(-0.72, -58.69, 5000);
-chassis.moveToPoint(-0.72, -58.69, 5000);
-chassis.turnToPoint(-0.72, -64.61, 5000);
-chassis.moveToPoint(-0.72, -64.61, 5000);
-chassis.moveToPoint(-0.91, -12.04, 5000, {.forwards = false});
-
+  chassis.setPose(-63.74, -2.86, 270);
+  pros::delay(2000);
+  chassis.moveToPoint(-49.14, -3.25, 5000, {.forwards = false});
+  chassis.turnToPoint(-48.98, -15.72, 5000, {.forwards = false});
+  chassis.moveToPoint(-48.98, -15.72, 5000, {.forwards = false});
+  chassis.moveToPoint(-48.96, -3.07, 5000);
+  chassis.turnToPoint(-29.23, -18.43, 5000, {.forwards = false});
+  chassis.moveToPoint(-29.23, -18.43, 5000, {.forwards = false});
+  chassis.moveToPoint(-23.49, -23.8, 5000, {.forwards = false});
+  chassis.turnToPoint(-37.22, -23.8, 5000, {.forwards = false});
+  chassis.moveToPoint(-37.22, -23.8, 5000, {.forwards = false});
+  chassis.turnToPoint(-23.67, -23.8, 5000);
+  chassis.moveToPoint(-23.67, -23.8, 5000);
+  chassis.turnToPoint(-42.18, -42.12, 5000, {.forwards = false});
+  chassis.moveToPoint(-42.18, -42.12, 5000, {.forwards = false});
+  chassis.moveToPoint(-47, -47.26, 5000);
+  chassis.turnToPoint(-47, -30.79, 5000, {.forwards = false});
+  chassis.moveToPoint(-47, -30.79, 5000, {.forwards = false});
+  chassis.moveToPoint(-47, -59, 5000);
+  chassis.turnToPoint(-61, -59, 5000, {.forwards = false});
+  chassis.moveToPoint(-61, -59, 5000, {.forwards = false});
+  chassis.moveToPoint(-47, -59, 5000);
+  chassis.turnToPoint(-47, -30.42, 5000, {.forwards = false});
+  chassis.moveToPoint(-47, -30.42, 5000, {.forwards = false});
+  chassis.moveToPoint(-47, -59.11, 5000);
+  chassis.turnToPoint(-61, -59, 5000, {.forwards = false});
+  chassis.moveToPoint(-61, -59, 5000, {.forwards = false});
+  chassis.moveToPoint(-37, -58.74, 5000);
+  chassis.turnToPoint(-30, -52, 5000, {.forwards = false});
+  chassis.moveToPoint(-30, -52, 5000, {.forwards = false});
+  chassis.moveToPoint(-37.19, -59.11, 5000);
+  chassis.turnToPoint(-61, -59, 5000, {.forwards = false});
+  chassis.moveToPoint(-61, -59, 5000, {.forwards = false});
+  chassis.moveToPoint(-37, -59, 5000);
+  chassis.turnToPoint(-30, -52, 5000, {.forwards = false});
+  chassis.moveToPoint(-30, -52, 5000, {.forwards = false});
+  chassis.moveToPoint(-37, -59, 5000);
+  chassis.turnToPoint(-61, -59, 5000, {.forwards = false});
+  chassis.moveToPoint(-61, -59, 5000, {.forwards = false, .maxSpeed = 46});
+  chassis.moveToPoint(-37, -59, 5000);
+  chassis.turnToPoint(-30, -52, 5000, {.forwards = false});
+  chassis.moveToPoint(-30, -52, 5000, {.forwards = false});
+  chassis.moveToPoint(-37, -59, 5000);
+  chassis.turnToPoint(-0.72, -58.69, 5000);
+  chassis.moveToPoint(-0.72, -58.69, 5000);
+  chassis.turnToPoint(-0.72, -64.61, 5000);
+  chassis.moveToPoint(-0.72, -64.61, 5000);
+  chassis.moveToPoint(-0.91, -12.04, 5000, {.forwards = false});
 
   // chassis.setPose(0, 0, 0);
 
@@ -211,46 +229,35 @@ chassis.moveToPoint(-0.91, -12.04, 5000, {.forwards = false});
 }
 
 void opcontrol() {
-  // starts display task thingy
+  while (true) {
+    int leftY = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+    int rightX = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
-  auto applyExpo = [&](int input, int expoPercent) {
-    int cubic = (input * input * input) / 10000;
-    return ((100 - expoPercent) * input + expoPercent * cubic) / 100;
-  };
+    // move the robot
+    chassis.arcade(leftY, rightX);
 
-  int rawDrive = master.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-  int rawTurn = master.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+      toggle_motor.move(-127);
+    } else {
+      toggle_motor.move(0);
+    }
 
-  rawDrive = rawDrive * 100 / 127;
-  rawTurn = rawTurn * 100 / 127;
+    if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
+      lift_motors.move_voltage(-12000);
+    }
+    // L2 makes it go down (Safety checks commented out for tuning max height)
+    else if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+      lift_motors.move_voltage(12000);
+    } else {
+      lift_motors.move_voltage(0);
+    }
 
-  if (abs(rawDrive) < 4)
-    rawDrive = 0;
-  if (abs(rawTurn) < 4)
-    rawTurn = 0;
-
-  int drive = applyExpo(rawDrive, 35); // mabey change to 15 if srikar wants
-  int turn = rawTurn;
-
-  int leftPower = drive + turn;
-  int rightPower = drive - turn;
-
-  const double MAX_WATTS = 3;
-
-  // change 40 to like 30 to make it slower ect
-  if (master.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-    leftPower = leftPower * 40 / 100;
-    rightPower = rightPower * 40 / 100;
-  }
-
-  leftPower = std::clamp(leftPower, -100, 100);
-  rightPower = std::clamp(rightPower, -100, 100);
-
-  if (abs(leftPower) < 5 && abs(rightPower) < 5) {
-    motors_left.move_voltage(0);
-    motors_right.move_voltage(0);
-  } else {
-    motors_left.move_voltage(leftPower * 120);
-    motors_right.move_voltage(rightPower * 120);
+    if (master.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
+      if (clamp.is_extended()) {
+        clamp.retract();
+      } else {
+        clamp.extend();
+      }
+    }
   }
 }
