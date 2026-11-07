@@ -211,6 +211,49 @@ void autonomous() {
     chassis.moveToPoint(0, -62.88, 5000);
     chassis.moveToPoint(0, -12.04, 5000, {.forwards = false});
   } else if (SelectedAuto == Auto::FourPin) {
+
+      chassis.setPose(69.38, -1.3, 270.0);
+  toggle_motor.move_voltage(127);
+  pros::delay(500);
+  toggle_motor.move_voltage(0);
+  // score matchload pin
+ chassis.moveToPoint(59.47,26.28,1000);
+   lift_motors.move_relative(-1500, 12000);
+   pros::delay(500);
+     lift_motors.move_relative(1500, 12000);
+pros::delay(500);
+   clamp.extend();
+   // Go pick up the next pin
+ chassis.moveToPoint(62.29, 32.35, 1000);
+ chassis.moveToPoint(52.99, 40.97, 1000);
+clamp.retract();
+clamp.extend();
+// Go score pin #2
+lift_motors.move_relative(1500, 12000);
+chassis.moveToPoint(30.77,48.11,1000);
+lift_motors.move_relative(-1500, 12000);
+clamp.retract();
+pros::delay(500);
+// Go pick up pin #3
+chassis.moveToPoint(24.75, 30.65, 1000);
+clamp.extend();
+pros::delay(500);
+lift_motors.move_relative(-1500, 12000);
+chassis.moveToPoint(44.09,-18.93,1000);
+pros::delay(500);
+//score pin #3
+lift_motors.move_relative(1500, 12000);
+// Go to pin #4
+chassis.moveToPoint(62.29, 32.35, 1000);
+chassis.swingToPoint(90, 0, DriveSide::LEFT, 1000);
+// go pick up pin #4
+clamp.retract();
+// score pin #4
+lift_motors.move_relative(1500, 12000);
+pros::delay(500);
+chassis.moveToPoint(53.71,26.15,1000);
+
+}
     
 
   }
