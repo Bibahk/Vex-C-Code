@@ -62,15 +62,15 @@ lemlib::OdomSensors sensors(
 
 // lateral PID controller
 lemlib::ControllerSettings
-    lateral_controller(6,  // proportional gain (kP)
-                       0,  // integral gain (kI)
+    lateral_controller(6, // proportional gain (kP)
+                       0, // integral gain (kI)
                        3, // derivative gain (kD)
-                       0,  // anti windup
-                       0,  // small error range, in inches
-                       0,  // small error range timeout, in milliseconds
-                       0,  // large error range, in inches
-                       0,  // large error range timeout, in milliseconds
-                       0   // maximum acceleration (slew)
+                       0, // anti windup
+                       0, // small error range, in inches
+                       0, // small error range timeout, in milliseconds
+                       0, // large error range, in inches
+                       0, // large error range timeout, in milliseconds
+                       0  // maximum acceleration (slew)
     );
 
 // angular PID controller
@@ -132,13 +132,63 @@ void initialize() {
 void disabled() {}
 void competition_initialize() {}
 void autonomous() {
-  chassis.setPose(0, 0, 0);
+chassis.setPose(-63.74, -2.86, 270);
+pros::delay(2000);
+chassis.moveToPoint(-49.14, -3.25, 5000, {.forwards = false});
+chassis.turnToPoint(-48.98, -15.72, 5000, {.forwards = false});
+chassis.moveToPoint(-48.98, -15.72, 5000, {.forwards = false});
+chassis.moveToPoint(-48.96, -3.07, 5000);
+chassis.turnToPoint(-29.23, -18.43, 5000, {.forwards = false});
+chassis.moveToPoint(-29.23, -18.43, 5000, {.forwards = false});
+chassis.moveToPoint(-23.49, -23.8, 5000, {.forwards = false});
+chassis.turnToPoint(-37.22, -23.8, 5000, {.forwards = false});
+chassis.moveToPoint(-37.22, -23.8, 5000, {.forwards = false});
+chassis.turnToPoint(-23.67, -23.8, 5000);
+chassis.moveToPoint(-23.67, -23.8, 5000);
+chassis.turnToPoint(-42.18, -42.12, 5000, {.forwards = false});
+chassis.moveToPoint(-42.18, -42.12, 5000, {.forwards = false});
+chassis.moveToPoint(-47, -47.26, 5000);
+chassis.turnToPoint(-47, -30.79, 5000, {.forwards = false});
+chassis.moveToPoint(-47, -30.79, 5000, {.forwards = false});
+chassis.moveToPoint(-47, -59, 5000);
+chassis.turnToPoint(-61, -59, 5000, {.forwards = false});
+chassis.moveToPoint(-61, -59, 5000, {.forwards = false});
+chassis.moveToPoint(-47, -59, 5000);
+chassis.turnToPoint(-47, -30.42, 5000, {.forwards = false});
+chassis.moveToPoint(-47, -30.42, 5000, {.forwards = false});
+chassis.moveToPoint(-47, -59.11, 5000);
+chassis.turnToPoint(-61, -59, 5000, {.forwards = false});
+chassis.moveToPoint(-61, -59, 5000, {.forwards = false});
+chassis.moveToPoint(-37, -58.74, 5000);
+chassis.turnToPoint(-30, -52, 5000, {.forwards = false});
+chassis.moveToPoint(-30, -52, 5000, {.forwards = false});
+chassis.moveToPoint(-37.19, -59.11, 5000);
+chassis.turnToPoint(-61, -59, 5000, {.forwards = false});
+chassis.moveToPoint(-61, -59, 5000, {.forwards = false});
+chassis.moveToPoint(-37, -59, 5000);
+chassis.turnToPoint(-30, -52, 5000, {.forwards = false});
+chassis.moveToPoint(-30, -52, 5000, {.forwards = false});
+chassis.moveToPoint(-37, -59, 5000);
+chassis.turnToPoint(-61, -59, 5000, {.forwards = false});
+chassis.moveToPoint(-61, -59, 5000, {.forwards = false, .maxSpeed = 46});
+chassis.moveToPoint(-37, -59, 5000);
+chassis.turnToPoint(-30, -52, 5000, {.forwards = false});
+chassis.moveToPoint(-30, -52, 5000, {.forwards = false});
+chassis.moveToPoint(-37, -59, 5000);
+chassis.turnToPoint(-0.72, -58.69, 5000);
+chassis.moveToPoint(-0.72, -58.69, 5000);
+chassis.turnToPoint(-0.72, -64.61, 5000);
+chassis.moveToPoint(-0.72, -64.61, 5000);
+chassis.moveToPoint(-0.91, -12.04, 5000, {.forwards = false});
 
-  chassis.moveToPoint(0, 10, 2000);
+
+  // chassis.setPose(0, 0, 0);
+
+  // chassis.moveToPoint(0, 10, 1000);
 
   // Scoring first pin
 
-  // chassis.moveToPoint(0, -15, 2000, {.forwards = false});
+  // chassis.moveToPoint(0, -15, 1000, {.forwards = false});
 
   // chassis.turnToPoint(-11, -15, 3000, {.forwards = false});
   // chassis.moveToPoint(-11, -15, 3000, {.forwards = false});
@@ -150,14 +200,14 @@ void autonomous() {
   // chassis.turnToPoint(-21.5, -32, 3000, {.forwards = false});
   // chassis.moveToPoint(-21.5, -32, 3000, {.forwards = false});
 
-  // chassis.moveToPoint(-29, -37.4, 2000, {.forwards = false});
+  // chassis.moveToPoint(-29, -37.4, 1000, {.forwards = false});
 
-  // chassis.turnToPoint(-22.5, -13, 2000, {.forwards = false});
-  // chassis.moveToPoint(-22.5, -13, 2000, {.forwards = false});
+  // chassis.turnToPoint(-22.5, -13, 1000, {.forwards = false});
+  // chassis.moveToPoint(-22.5, -13, 1000, {.forwards = false});
 
   // // Getting next cup/pin
 
-  // chassis.moveToPoint(-29, -37.4, 2000, {.forwards = true});
+  // chassis.moveToPoint(-29, -37.4, 1000, {.forwards = true});
 }
 
 void opcontrol() {
