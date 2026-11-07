@@ -161,7 +161,7 @@ void disabled() {}
 void competition_initialize() {}
 void autonomous() {
   if (SelectedAuto == Auto::Skills) {
-    chassis.setPose(-62.62, 0.61, 270);
+    chassis.setPose(63.99, -6.99, 270);
     pros::delay(2000);
     chassis.moveToPoint(-47.11, 0.69, 5000, {.forwards = false});
     chassis.turnToPoint(-47.17, -14.23, 5000, {.forwards = false});
@@ -211,47 +211,52 @@ void autonomous() {
     chassis.moveToPoint(0, -62.88, 5000);
     chassis.moveToPoint(0, -12.04, 5000, {.forwards = false});
   } else if (SelectedAuto == Auto::FourPin) {
-
+//clamp extend is opening it
       chassis.setPose(69.38, -1.3, 270.0);
   toggle_motor.move_voltage(127);
   pros::delay(500);
   toggle_motor.move_voltage(0);
-  // score matchload pin
- chassis.moveToPoint(59.47,26.28,1000);
+  //score matchload
+ chassis.moveToPoint(45.5,-0.9,1000);
+  chassis.moveToPoint(45.88, 13.58, 10
+    00);
    lift_motors.move_relative(-1500, 12000);
    pros::delay(500);
      lift_motors.move_relative(1500, 12000);
 pros::delay(500);
    clamp.extend();
-   // Go pick up the next pin
- chassis.moveToPoint(62.29, 32.35, 1000);
- chassis.moveToPoint(52.99, 40.97, 1000);
+   //pick up 2nd pin
+ chassis.moveToPoint(45.5, -0.9, 1000);
+  chassis.moveToPoint(30.28, 17.05, 1000);
 clamp.retract();
-clamp.extend();
+//clamp.extend();
 // Go score pin #2
-lift_motors.move_relative(1500, 12000);
-chassis.moveToPoint(30.77,48.11,1000);
 lift_motors.move_relative(-1500, 12000);
-clamp.retract();
+chassis.moveToPoint(37.28,-4.3,1000);
 pros::delay(500);
-// Go pick up pin #3
-chassis.moveToPoint(24.75, 30.65, 1000);
+chassis.moveToPoint(46.77, -11.71, 1000);
+chassis.turnToHeading(0, 500);
+lift_motors.move_relative(1500, 12000);
 clamp.extend();
+//go pick up pin 3
 pros::delay(500);
-lift_motors.move_relative(-1500, 12000);
-chassis.moveToPoint(44.09,-18.93,1000);
-pros::delay(500);
-//score pin #3
-lift_motors.move_relative(1500, 12000);
-// Go to pin #4
-chassis.moveToPoint(62.29, 32.35, 1000);
-chassis.swingToPoint(90, 0, DriveSide::LEFT, 1000);
-// go pick up pin #4
+chassis.moveToPoint(32.38,-0.4,1000);
+chassis.turnToHeading(90, 500);
 clamp.retract();
-// score pin #4
+
+//score pin #3
+chassis.moveToPoint(40.65, 15.22, 1000);
+lift_motors.move_relative(-1500, 12000);
 lift_motors.move_relative(1500, 12000);
-pros::delay(500);
-chassis.moveToPoint(53.71,26.15,1000);
+clamp.extend();
+// Go to pin #4
+//chassis.swingToPoint(90, 0, DriveSide::LEFT, 1000);
+// go pick up pin #4
+//clamp.retract();
+// score pin #4
+//lift_motors.move_relative(1500, 12000);
+//pros::delay(500);
+//chassis.moveToPoint(53.71,26.15,1000);
 
 }
     
