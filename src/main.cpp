@@ -119,7 +119,7 @@ enum Auto {
   None
 };
 
-Auto SelectedAuto = Auto::None;
+Auto SelectedAuto = Auto::FourPin;
 
 void initialize() {
   pros::lcd::initialize();
@@ -284,7 +284,7 @@ chassis.moveToPoint(53.71,26.15,1000);
   // // Getting next cup/pin
 
   // chassis.moveToPoint(-29, -37.4, 1000, {.forwards = true});
-}
+
 
 void opcontrol() {
   while (true) {
