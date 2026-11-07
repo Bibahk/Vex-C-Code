@@ -116,10 +116,17 @@ enum Auto {
   FourPin,
   Left,
   Skills,
+  LQRight,
+  RQLeft,
   None
 };
 
-Auto SelectedAuto = Auto::FourPin;
+enum TeamColor {
+  Red,
+  Blue
+};
+
+Auto SelectedAuto = Auto::RQLeft;
 
 void initialize() {
   pros::lcd::initialize();
@@ -160,7 +167,67 @@ void initialize() {
 void disabled() {}
 void competition_initialize() {}
 void autonomous() {
-  if (SelectedAuto == Auto::Skills) {
+  if (SelectedAuto == Auto::LQRight) {
+    chassis.setPose(0, 0, 0);
+    toggle_motor.move_relative(-1440, 12000);
+    pros::delay(2000);
+
+    lift_motors.move_relative(-700, 12000);
+    chassis.moveToPoint(0, -15, 2000, {.forwards = false});
+
+    chassis.turnToPoint(-16, -15, 2000, {.forwards = false});
+    chassis.moveToPoint(-16, -15, 2000, {.forwards = false});
+    chassis.waitUntilDone();
+    lift_motors.move_relative(600, 12000);
+    pros::delay(500);
+    clamp.extend();
+    pros::delay(1000);
+    chassis.moveToPoint(0, -15, 2000);
+  } else if (SelectedAuto == Auto::RQLeft) {
+    chassis.setPose(0, 0, 0);
+    // Toggle
+    toggle_motor.move_relative(-1440, 12000);
+    pros::delay(2000);
+
+    // Scoring first pin.
+    lift_motors.move_relative(-700, 12000);
+    chassis.moveToPoint(0, -15, 1000, {.forwards = false});
+
+    chassis.turnToPoint(16, -15, 1000, {.forwards = false});
+    chassis.moveToPoint(16, -15, 1000, {.forwards = false});
+    chassis.waitUntilDone();
+    lift_motors.move_relative(600, 12000);
+    pros::delay(500);
+    clamp.extend();
+    pros::delay(1000);
+
+    // Getting next pin
+    chassis.moveToPoint(0, -15, 2000);
+
+    chassis.turnToPoint(16.7, -33, 1000, {.forwards = false});
+    chassis.moveToPoint(16.7, -33, 3000, {.forwards = false, .maxSpeed = 80});
+    chassis.waitUntilDone();
+    clamp.retract();
+    // pros::delay(500);
+
+    // lift.move_relative(-1200, 12000);
+
+    // chassis.moveToPoint(24, -40, 1000, {.forwards = false});
+    // chassis.turnToPoint(24, -23, 1000, {.forwards = false});
+    // chassis.moveToPoint(24, -23, 1000, {.forwards = false});
+    // chassis.waitUntilDone();
+
+    // lift.move_relative(600, 12000);
+    // pros::delay(500);
+    // clamp.extend();
+
+
+  } else if (SelectedAuto == Auto::Left) {
+
+  } else if (SelectedAuto == Auto::FourPin) {
+  
+
+  } else if (SelectedAuto == Auto::Skills) {
     chassis.setPose(-62.62, 0.61, 270);
     pros::delay(2000);
     chassis.moveToPoint(-47.11, 0.69, 5000, {.forwards = false});
@@ -210,52 +277,6 @@ void autonomous() {
     chassis.turnToPoint(0, -62.88, 5000);
     chassis.moveToPoint(0, -62.88, 5000);
     chassis.moveToPoint(0, -12.04, 5000, {.forwards = false});
-  } else if (SelectedAuto == Auto::FourPin) {
-
-      chassis.setPose(69.38, -1.3, 270.0);
-  toggle_motor.move_voltage(127);
-  pros::delay(500);
-  toggle_motor.move_voltage(0);
-  // score matchload pin
- chassis.moveToPoint(59.47,26.28,1000);
-   lift_motors.move_relative(-1500, 12000);
-   pros::delay(500);
-     lift_motors.move_relative(1500, 12000);
-pros::delay(500);
-   clamp.extend();
-   // Go pick up the next pin
- chassis.moveToPoint(62.29, 32.35, 1000);
- chassis.moveToPoint(52.99, 40.97, 1000);
-clamp.retract();
-clamp.extend();
-// Go score pin #2
-lift_motors.move_relative(1500, 12000);
-chassis.moveToPoint(30.77,48.11,1000);
-lift_motors.move_relative(-1500, 12000);
-clamp.retract();
-pros::delay(500);
-// Go pick up pin #3
-chassis.moveToPoint(24.75, 30.65, 1000);
-clamp.extend();
-pros::delay(500);
-lift_motors.move_relative(-1500, 12000);
-chassis.moveToPoint(44.09,-18.93,1000);
-pros::delay(500);
-//score pin #3
-lift_motors.move_relative(1500, 12000);
-// Go to pin #4
-chassis.moveToPoint(62.29, 32.35, 1000);
-chassis.swingToPoint(90, 0, DriveSide::LEFT, 1000);
-// go pick up pin #4
-clamp.retract();
-// score pin #4
-lift_motors.move_relative(1500, 12000);
-pros::delay(500);
-chassis.moveToPoint(53.71,26.15,1000);
-
-}
-    
-
   }
 
   // chassis.setPose(0, 0, 0);
@@ -284,7 +305,7 @@ chassis.moveToPoint(53.71,26.15,1000);
   // // Getting next cup/pin
 
   // chassis.moveToPoint(-29, -37.4, 1000, {.forwards = true});
-
+}
 
 void opcontrol() {
   while (true) {
