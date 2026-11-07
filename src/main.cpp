@@ -120,7 +120,7 @@ void initialize() {
 
 void disabled() {}
 void competition_initialize() {}
-void autonomous() {
+void autonomous() { 
     chassis.setPose(69.872, 0.007, 0);
 
     chassis.moveToPoint(0, 24, 999000);
