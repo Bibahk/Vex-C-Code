@@ -64,7 +64,7 @@ lemlib::OdomSensors sensors(
 lemlib::ControllerSettings
     lateral_controller(6, // proportional gain (kP)
                        0, // integral gain (kI)
-                       4, // derivative gain (kD)
+                       4.3, // derivative gain (kD)
                        0, // anti windup
                        0, // small error range, in inches
                        0, // small error range timeout, in milliseconds
@@ -75,9 +75,9 @@ lemlib::ControllerSettings
 
 // angular PID controller
 lemlib::ControllerSettings
-    angular_controller(2,  // proportional gain (kP) 2.4, Upper Limit (3.2)
+    angular_controller(4.5,  // Best kP 4.5, Max 5
                        0,  // integral gain (kI)
-                       10, // derivative gain (kD) 20
+                       34, // derivative gain (kD) Best kD 34, could increase a bit.
                        0,  // anti windup
                        0,  // small error range, in inches
                        0,  // small error range timeout, in milliseconds
@@ -112,11 +112,11 @@ pros::Motor toggle_motor(6, pros::v5::MotorGears::green);
 pros::Distance clamp_detector(10);
 pros::adi::Pneumatics clamp('A', false);
 
-enum Auto { FourPin, Left, Skills, LQRight, RQLeft, None };
+enum Auto { FourPin, Left, Skills, LQRight, RQLeft, Tune, None };
 
 enum TeamColor { Red, Blue };
 
-Auto SelectedAuto = Auto::LQRight;
+Auto SelectedAuto = Auto::Tune;
 
 void initialize() {
   pros::lcd::initialize();
@@ -175,29 +175,30 @@ void autonomous() {
     clamp.extend();
     pros::delay(1000);
 
-    // Getting next pin
+    // Getting the second pin
     chassis.moveToPoint(0, -15, 800);
     lift_motors.move_relative(100, 12000);
 
-    chassis.turnToPoint(-17.5, -33.5, 1000, {.forwards = false});
-    chassis.moveToPoint(-10, -27.7, 1000, {.forwards = false});
-    chassis.moveToPoint(-17.5, -33.5, 1000, {.forwards = false, .maxSpeed = 80});
+    chassis.turnToPoint(-17.6, -33.4, 1000, {.forwards = false});
+    chassis.moveToPoint(-17.6, -33.4, 3500, {.forwards = false, .maxSpeed = 30});
     chassis.waitUntilDone();
   
     clamp.retract();
     pros::delay(500);
 
-    lift.move_relative(-1200, 12000);
+    lift.move_relative(-1400, 12000);
 
     chassis.moveToPoint(-23.8, -40, 800, {.forwards = false});
-    chassis.turnToPoint(-23.8, -23, 00, {.forwards = false});
-    chassis.moveToPoint(-23.8, -23, 800, {.forwards = false});
+    chassis.turnToPoint(-23.8, -24, 800, {.forwards = false});
+    chassis.moveToPoint(-23.8, -24, 800, {.forwards = false});
     chassis.waitUntilDone();
     // chassis.turnToPoint(16, -15, 800, {.forwards = false});
     // chassis.moveToPoint(16, -15, 800, {.forwards = false});
     lift_motors.move_relative(600, 12000);
     pros::delay(500);
     clamp.extend();
+
+
   } else if (SelectedAuto == Auto::RQLeft) {
     chassis.setPose(0, 0, 0);
     // Toggle
@@ -302,6 +303,8 @@ void autonomous() {
     // lift_motors.move_relative(1500, 12000);
     // pros::delay(500);
     // chassis.moveToPoint(53.71,26.15,1000);
+  } else if (SelectedAuto == Auto::Tune) {
+    chassis.turnToHeading(90, 99999);
   }
 }
 
