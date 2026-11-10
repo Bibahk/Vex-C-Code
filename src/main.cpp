@@ -181,7 +181,7 @@ void autonomous() {
 
     chassis.turnToPoint(-17.5, -33.5, 1000, {.forwards = false});
     chassis.moveToPoint(-10, -27.7, 1000, {.forwards = false});
-    chassis.moveToPoint(-17.5, -33.5, 1000, {.forwards = false, .maxSpeed = 80});
+    chassis.moveToPoint(-14.9, -31.9, 1000, {.forwards = false, .maxSpeed = 80});
     chassis.waitUntilDone();
   
     clamp.retract();
